@@ -1,0 +1,47 @@
+import pandas as pd
+
+# File Paths
+excel_path = r"C:\Users\rchan\Downloads\Table-5a-India-District-MPI-2018-1.xlsx"
+district_csv_path = "district_wise_mpi.csv" 
+
+# 1. Load MPI Data
+# Sheet 5a.1: MPI and Headcount Ratio
+df_summary = pd.read_excel(excel_path, sheet_name='5a.1 India MPI District ', skiprows=8, header=None)
+df_summary = df_summary[[0, 1, 10, 11]].rename(columns={0: 'State', 1: 'District', 10: 'MPI', 11: 'Headcount_Ratio (H)'})
+
+# Sheet 5a.4: Electricity Deprivation
+df_raw_mpi = pd.read_excel(excel_path, sheet_name='5a.4 District Raw Headcount', skiprows=8, header=None)
+df_raw_mpi = df_raw_mpi[[0, 1, 16]].rename(columns={0: 'State', 1: 'District', 16: 'Electricity_Deprivation'})
+
+# 2. Load District Census Data
+df_census = pd.read_csv(district_csv_path)
+
+# 3. Clean and Merge
+for df in [df_summary, df_raw_mpi, df_census]:
+    df['State'] = df['State'].astype(str).str.strip().str.title()
+    df['District'] = df['District'].astype(str).str.strip().str.title()
+
+df_merged = pd.merge(df_summary, df_raw_mpi, on=['State', 'District'], how='inner')
+df_final = pd.merge(df_merged, df_census, on=['State', 'District'], how='inner')
+
+# 4. Feature Engineering Logic
+# Calculate Average Household Size
+df_final['Average Household Size'] = df_final['Total Population'] / df_final['Households']
+
+# Calculate Electricity Access (Inverse of Deprivation)
+df_final['Electricity Access'] = 100 - df_final['Electricity_Deprivation']
+
+# Derive Income Proxy (Raw derivation, no outlier capping)
+# Formula: (Working Population / Total Population) * Base Wage Factor
+df_final['Average Annual Income'] = (df_final['Total Working Population'] / df_final['Total Population']) * 150000
+
+# 5. Export Final Dataset
+required_columns = [
+    'State', 'District', 'Average Household Size', 
+    'Electricity Access', 'Average Annual Income', 
+    'MPI', 'Headcount_Ratio (H)'
+]
+df_export = df_final[required_columns]
+df_export.to_csv('final_poverty_features.csv', index=False)
+
+print("Feature Engineering Complete. Dataset saved as 'final_poverty_features.csv'")
