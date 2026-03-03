@@ -1,0 +1,15 @@
+# Data Processing and Integration
+pandas
+numpy
+openpyxl
+
+# Machine Learning and Preprocessing
+scikit-learn
+scipy
+
+# Visualization (if you plan to plot the poverty trends)
+matplotlib
+seaborn
+
+# Environment
+ipykernel
