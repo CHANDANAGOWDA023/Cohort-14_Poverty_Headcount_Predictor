@@ -1,3 +1,6 @@
+
+**Note:** The complete and finalized project code is available in the `master` branch. Kindly navigate to the `master` branch to view the actual implementation and latest updates.
+
 # Cohort-14_Poverty_Headcount_Predictor
 
 # 📊 Poverty Dataset Integration
